@@ -17,8 +17,13 @@ data:
   img_size: 224
 
 leakage:
-  phash_max_hamming: 4               # dari 64 bit; makin kecil makin ketat
-  cosine_min: 0.95                   # kemiripan kosinus embedding DINOv2
+  phash_max_hamming: 4               # dari 64 bit; kandidat pHash
+  cosine_min: 0.95                   # kandidat kosinus embedding DINOv2
+  # Kandidat baru dianggap DUPLIKAT bila: (pHash <= 4 DAN kosinus >= 0,90) ATAU kosinus >= 0,985.
+  # Alasan (run asli 2026-11-25): aturan ATAU membentuk satu grup 525 citra; pHash saja
+  # memasangkan HAM-PAD dengan kosinus 0,29-0,82 (jelas bukan citra sama), dan pasangan
+  # lesi-sama (duplikat sungguhan) bermedian kosinus 0,965 sehingga 0,95 saja tidak memisahkan.
+  dup_rule: {phash_and_cosine: 0.90, cosine_alone: 0.985}
   max_group_warn_frac: 0.01          # peringatan bila satu grup duplikat > 1% data
   contact_sheet_pairs: 60            # jumlah pasangan kandidat untuk diperiksa manual
 

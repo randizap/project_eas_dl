@@ -153,6 +153,19 @@ def run(cfg: dict) -> None:
                     np.where(pairs["lesion_id_a"] == pairs["lesion_id_b"], "same_lesion",
                              "diff_lesion_" + pairs["domain_a"].astype(str)))
     pairs["label_conflict"] = pairs["label_a"] != pairs["label_b"]
+    # Aturan duplikat: kandidat (pHash ATAU kosinus) hanya dianggap duplikat bila kedua
+    # detektor sepakat, atau kosinus sangat tinggi. Pada data asli, pHash <= 4 saja
+    # memasangkan citra yang jelas berbeda (kulit polos + sudut vignette gelap memberi hash
+    # hampir sama) dan kosinus 0,95 saja tumpang-tindih dengan pasangan lesi berbeda; aturan
+    # OR membentuk satu grup 525 citra. Ambang dikalibrasi dari struktur citra (pasangan
+    # lesi-sama sebagai acuan), BUKAN dari skor model.
+    rule = lk.get("dup_rule") or {}
+    if rule:
+        pairs["is_duplicate"] = (((pairs["phash_dist"] <= lk["phash_max_hamming"])
+                                  & (pairs["cosine"] >= rule["phash_and_cosine"]))
+                                 | (pairs["cosine"] >= rule["cosine_alone"]))
+    else:
+        pairs["is_duplicate"] = True
     pairs["manual_verdict"] = ""   # isi: dup / bukan  (pemeriksaan manual, proposal 3.1)
     pairs = pairs.sort_values(["kind", "cosine"], ascending=[True, False])
     # Verdict manual (proposal 3.1): salin pairs.csv -> pairs_reviewed.csv, isi kolom
@@ -167,7 +180,7 @@ def run(cfg: dict) -> None:
         pairs["manual_verdict"] = [("bukan" if (a, b) in rejected else "")
                                    for a, b in zip(pairs.image_id_a, pairs.image_id_b)]
         print(f"[leakage] {len(rejected)} pasangan ditolak lewat pemeriksaan manual")
-    active = pairs[pairs["manual_verdict"] != "bukan"]
+    active = pairs[(pairs["manual_verdict"] != "bukan") & pairs["is_duplicate"].astype(bool)]
 
     # --- Grup split: lesi HAM + gabungan karena hampir-kembar lintas lesi
     ham = df[df.domain == "ham"]
@@ -184,10 +197,12 @@ def run(cfg: dict) -> None:
     gsize = groups[groups.domain == "ham"].groupby("group_id").size()
     mixed = groups[groups.domain == "ham"].groupby("group_id")["label"].nunique()
     report = {
-        "thresholds": {"phash_max_hamming": lk["phash_max_hamming"], "cosine_min": lk["cosine_min"]},
+        "thresholds": {"phash_max_hamming": lk["phash_max_hamming"], "cosine_min": lk["cosine_min"],
+                       "dup_rule": rule or None},
         "n_images": int(len(df)),
-        "pairs_by_kind": {k: int(v) for k, v in pairs["kind"].value_counts().items()},
-        "pairs_label_conflict": int(pairs["label_conflict"].sum()),
+        "candidate_pairs_by_kind": {k: int(v) for k, v in pairs["kind"].value_counts().items()},
+        "pairs_by_kind": {k: int(v) for k, v in active["kind"].value_counts().items()},
+        "pairs_label_conflict": int(active["label_conflict"].sum()),
         "pairs_rejected_manually": int(len(rejected)),
         "ham_lesions": int(ham["lesion_id"].nunique()),
         "ham_groups_after_merge": int(gsize.size),
@@ -202,7 +217,9 @@ def run(cfg: dict) -> None:
     pairs.drop(columns=["i", "j"]).to_csv(wd / "leakage" / "pairs.csv", index=False)
     groups.to_csv(wd / "groups.csv", index=False)
     write_json(wd / "leakage" / "report.json", report)
-    review = pairs[pairs.kind != "same_lesion"]
+    review = active[active.kind != "same_lesion"]
+    if review.empty:
+        review = pairs[pairs.kind != "same_lesion"]
     contact_sheet(df, review, wd / "leakage" / "contact_sheet.png", lk["contact_sheet_pairs"])
     print(json.dumps(report, indent=2))
 
