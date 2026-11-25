@@ -33,6 +33,15 @@ def load_config(path: str | os.PathLike, smoke: bool = False) -> dict:
         cfg = yaml.safe_load(f)
     cfg["_config_path"] = str(path)
     cfg["_smoke"] = smoke
+    # Colab: data mentah & cache citra di disk lokal /content (cepat, tidak memenuhi kuota
+    # Google Drive), sementara checkpoint & hasil tetap di Drive (outputs/).
+    if not smoke:
+        if os.environ.get("EAS_DATA_DIR"):
+            d = Path(os.environ["EAS_DATA_DIR"])
+            cfg["paths"]["ham_dir"] = str(d / "ham10000")
+            cfg["paths"]["pad_dir"] = str(d / "pad_ufes_20")
+        if os.environ.get("EAS_CACHE_DIR"):
+            cfg["paths"]["cache_dir"] = os.environ["EAS_CACHE_DIR"]
     if smoke:
         # Mode uji asap: data sintetis, tanpa bobot pretrained, epoch sangat sedikit.
         # Output dan log dipisah supaya tidak mencemari log eksperimen asli.

@@ -186,7 +186,7 @@ def build_index(cfg: dict) -> pd.DataFrame:
         raise ValueError("image_id ganda setelah penggabungan.")
     classes = cfg["data"]["classes"]
     df["y"] = df["label"].map({c: i for i, c in enumerate(classes)}).astype(int)
-    cache = work_dir(cfg) / "cache"
+    cache = Path(cfg["paths"]["cache_dir"]) if cfg["paths"].get("cache_dir") else work_dir(cfg) / "cache"
     # Format sumber dipertahankan: PAD tetap PNG agar tidak menambah artefak JPEG
     # pada data OOD (JPEG juga salah satu augmentasi intervensi).
     df["cache_path"] = [str(cache / d / (i + Path(p).suffix.lower()))
