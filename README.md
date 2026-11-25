@@ -3,7 +3,7 @@
 **Proyek Akhir (EAS) Deep Learning · Track D: Pergeseran Data (Distribution Shift)**
 Raditya Andiza Putro (23083010058) · Rosyidatul Kamila (23083010076)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/USERNAME/project_eas_dl/blob/main/notebooks/EAS_DL_Colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/randizap/project_eas_dl/blob/main/notebooks/EAS_DL_Colab.ipynb)
 &nbsp;·&nbsp; 🌐 **Website:** `https://<nama-proyek>.vercel.app` *(isi setelah deploy)*
 
 Model dilatih **hanya** pada HAM10000 (dermatoskopi), lalu diuji pada test set HAM10000 yang belum pernah dilihat (*in-distribution*, ID) dan pada PAD-UFES-20 (foto ponsel, *out-of-distribution*, OOD).
@@ -67,11 +67,11 @@ project_eas_dl/
 ### 3.1 Sekali saja: GitHub + Vercel
 1. Buat repositori baru di GitHub (mis. `project_eas_dl`), lalu dari folder ini:
    ```bash
-   git remote add origin https://github.com/USERNAME/project_eas_dl.git
+   git remote add origin https://github.com/randizap/project_eas_dl.git
    git push -u origin main
    ```
 2. Ganti `USERNAME` di badge Colab di atas.
-3. Di <https://vercel.com/new>, **Import** repositori tersebut. Biarkan *Root Directory* = `./` (konfigurasi diambil dari `vercel.json`). Tambahkan *Environment Variable* `VITE_GITHUB_REPO` = `USERNAME/project_eas_dl` (untuk tautan GitHub/Colab di situs), lalu **Deploy**.
+3. Di <https://vercel.com/new>, **Import** repositori tersebut. Biarkan *Root Directory* = `./` (konfigurasi diambil dari `vercel.json`). Tambahkan *Environment Variable* `VITE_GITHUB_REPO` = `randizap/project_eas_dl` (untuk tautan GitHub/Colab di situs), lalu **Deploy**.
 
 ### 3.2 Training di Google Colab
 1. Klik badge **Open in Colab**, pilih **Runtime → Change runtime type → T4 GPU**.
