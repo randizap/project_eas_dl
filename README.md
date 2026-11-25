@@ -4,7 +4,7 @@
 Raditya Andiza Putro (23083010058) · Rosyidatul Kamila (23083010076)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/randizap/project_eas_dl/blob/main/notebooks/EAS_DL_Colab.ipynb)
-&nbsp;·&nbsp; 🌐 **Website:** `https://<nama-proyek>.vercel.app` *(isi setelah deploy)*
+&nbsp;·&nbsp; 🌐 **Website:** <https://project-eas-dl.vercel.app>
 
 Model dilatih **hanya** pada HAM10000 (dermatoskopi), lalu diuji pada test set HAM10000 yang belum pernah dilihat (*in-distribution*, ID) dan pada PAD-UFES-20 (foto ponsel, *out-of-distribution*, OOD).
 
