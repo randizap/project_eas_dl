@@ -25,9 +25,13 @@ Bagian kode yang **masing-masing** siap jelaskan baris per baris saat tanya jawa
 - Kritik terhadap proposal (ketidakcocokan kelas AK, pergeseran prior, n melanoma PAD yang kecil, tumpang-tindih korupsi dengan augmentasi, determinisme linear probe).
 - Notebook Colab `notebooks/EAS_DL_Colab.ipynb`, modul ekspor `src/export_web.py` (results.json + model ONNX dengan kepala CAM), perbaikan penyimpanan checkpoint atomik di `src/train_cnn.py`, seluruh website di `web/` (React + ONNX Runtime Web), dan `vercel.json`.
 
+**Yang dijalankan AI atas permintaan kami:**
+- AI (Claude, lewat browser) mengoperasikan notebook Colab di akun Google kami: mengunduh dataset (token Kaggle dimasukkan sendiri oleh kami di Colab Secrets), menjalankan kebocoran/split, tuning, training, evaluasi, laporan, dan ekspor, lalu mengambil hasilnya dari Drive dan melakukan push ke GitHub. Angka hasil berasal dari run tersebut (`runs/log.csv`, `weights.txt`, `laporan/hasil_ringkas.md`), bukan dikarang.
+- Selama proses: (1) aturan duplikat diperketat ke "pHash DAN kosinus" setelah split menolak grup duplikat berukuran 525 citra (sebelum training, sebelum test dibuka); (2) Google Drive penuh sehingga `best.pt` run `cnn_main_lesion_s2` tidak tersimpan; run itu dilatih ulang dengan seed yang sama (kurva validasi identik, epoch terbaik 7, val bal. acc 0,7749) sebelum test dibuka; (3) report & export dijalankan di runtime CPU karena kuota GPU habis.
+
 **Yang TIDAK dilakukan AI:**
-- AI tidak menjalankan eksperimen asli dan tidak menghasilkan angka hasil apa pun. Semua angka di laporan berasal dari `outputs/` hasil run kami sendiri.
-- AI tidak mengakses dataset asli. Kode hanya diuji pada data sintetis.
+- AI tidak memilih model atau hiperparameter berdasarkan hasil test. Test set dibuka satu kali (`TEST_OPENED.json`, berisi SHA-256 tiap checkpoint).
+- AI tidak menulis bagian hasil & pembahasan laporan; itu tugas kami berdasarkan `laporan/hasil_ringkas.md`.
 
 **Verifikasi yang kami lakukan sendiri:** ✏️ (contoh: menjalankan `pytest` & `--smoke`; membaca setiap modul; memeriksa contact sheet duplikat secara manual; mencocokkan jumlah citra dengan publikasi dataset; memeriksa referensi)
 

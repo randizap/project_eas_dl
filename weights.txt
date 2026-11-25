@@ -1,9 +1,23 @@
-# weights.txt - BELUM DIISI.
-# File ini ditulis ulang otomatis setelah semua run selesai:
-#   python -m src.hash_weights --link-prefix "https://drive.google.com/drive/folders/<ID_FOLDER>"
-# Isinya: run_id, nama file, SHA-256, dan tautan setiap checkpoint final (15 run).
-# Verifikasi oleh penilai: sha256sum best.pt  ->  harus sama dengan kolom SHA-256.
-#
-# Bobot pretrained awal (bukan hasil kami; wajib dicantumkan sumber & versi, slide 3):
-#   EfficientNet-B0: torchvision.models.EfficientNet_B0_Weights.IMAGENET1K_V1 (Tan & Le 2019)
-#   DINOv2 ViT-S/14: timm "vit_small_patch14_dinov2.lvd142m" (Oquab dkk. 2024)
+# weights.txt - dibuat otomatis oleh src/hash_weights.py
+# dibuat: 2026-11-25T13:38:07Z
+# lokasi: https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS
+# Bobot pretrained awal (bukan hasil kami):
+#   EfficientNet-B0: torchvision EfficientNet_B0_Weights.IMAGENET1K_V1
+#   DINOv2 ViT-S/14: timm vit_small_patch14_dinov2.lvd142m (Oquab dkk. 2024)
+# format: run_id<TAB>file<TAB>sha256<TAB>tautan
+
+lp_dinov2_lesion_s0	model.pkl	a2ff58a166512b02146799e43e03e67f2c3c1b343b78628620c7185a320cf67e	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_lesion_s0/model.pkl
+cnn_main_lesion_s0	best.pt	6082630f3bb23878b8ba8d6027f7e57e88550756844ac72209219a80d0b4de24	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_lesion_s0/best.pt
+cnn_phone_lesion_s0	best.pt	9da440589e401881c9c7ed4629318ae255029f9e186d6bcdd57ef8a009034e60	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_phone_lesion_s0/best.pt
+lp_dinov2_image_s0	model.pkl	8d7293c0cead8c28b7e6a99889172906cc2353eace525134c3a8fe06eaff882f	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_image_s0/model.pkl
+lp_dinov2_lesion_s1	model.pkl	178d91927e7df0e1b94a61af21c2e805f7481a4c616ad8133dbbe41e95118a33	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_lesion_s1/model.pkl
+cnn_main_lesion_s1	best.pt	ac36e08db678947864dce7f5582ed440094c8b081a7ef69b3a84b4fda08fdceb	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_lesion_s1/best.pt
+cnn_phone_lesion_s1	best.pt	ecbf3e675e099f1afd5fb8ddd00b6b7e923c0890a0ccdb275b3faa2d79f4009e	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_phone_lesion_s1/best.pt
+lp_dinov2_image_s1	model.pkl	c3ce0de5bca272d8b9f8a2575db616ef8d5338f6241bbfc6c2d86b6d07327956	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_image_s1/model.pkl
+lp_dinov2_lesion_s2	model.pkl	708045e12312c84e52574852c7033d60fb12a2e500d3ae90b384bdd4601feb4d	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_lesion_s2/model.pkl
+cnn_main_lesion_s2	best.pt	2b15a915a713ea57f8d8abf6173b464b85bf2e1e27d2b66ed79460df337ff57e	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_lesion_s2/best.pt
+cnn_phone_lesion_s2	best.pt	2135f3aabb482ca3cbc32cc85943b15340166410d5f9add249ae5554cdc38cfb	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_phone_lesion_s2/best.pt
+lp_dinov2_image_s2	model.pkl	73c2488bfc0e1016d8ba21599a96c668f9e2804c2ee777f5e2703d25e047f971	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/lp_dinov2_image_s2/model.pkl
+cnn_main_image_s0	best.pt	1b72569994880c68d2016881966947bb8d1e7de4a4a0d4c71749cecd01201a78	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_image_s0/best.pt
+cnn_main_image_s1	best.pt	2a274b8fe17c15649cbf3f9752850e7b82b70e71f17b45a9dd7c315f193ecc9a	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_image_s1/best.pt
+cnn_main_image_s2	best.pt	0fd688ed59f02dbc52bb60bcacb806f8503134be9faff25652d6ed34042aa6c9	https://drive.google.com/drive/folders/ISI_ID_FOLDER_OUTPUTS_RUNS/cnn_main_image_s2/best.pt
