@@ -102,7 +102,8 @@ def run(cfg: dict, force: bool = False) -> None:
     wd = work_dir(cfg)
     lock = wd / "TEST_OPENED.json"
     runs = expected_runs(cfg)
-    missing = [r["id"] for r in runs if not (wd / "runs" / r["id"] / "done.json").exists()]
+    missing = [r["id"] for r in runs if not (wd / "runs" / r["id"] / "done.json").exists()
+               or not _ckpt(cfg, r).exists() or _ckpt(cfg, r).stat().st_size == 0]
     if missing:
         raise RuntimeError(f"Test BELUM boleh dibuka; run belum selesai: {missing}")
     if lock.exists() and not force:

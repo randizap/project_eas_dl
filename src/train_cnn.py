@@ -73,7 +73,13 @@ def atomic_torch_save(obj, path) -> None:
     path = Path(path)
     tmp = path.with_suffix(path.suffix + ".tmp")
     torch.save(obj, tmp)
+    size = tmp.stat().st_size
     os.replace(tmp, path)
+    # Google Drive yang penuh bisa "menelan" file tanpa galat (file hilang / 0 byte).
+    # Gagal keras di sini lebih baik daripada run ditandai selesai tanpa checkpoint.
+    if not path.exists() or path.stat().st_size != size or size == 0:
+        raise OSError(f"Checkpoint {path} tidak tersimpan utuh. Ruang Google Drive penuh? "
+                      "Kosongkan Drive/Trash lalu jalankan ulang sel (training lanjut otomatis).")
 
 
 def _load_resume(last: Path, device):
@@ -108,8 +114,13 @@ def train(cfg: dict, name: str, seed: int, mode: str = "lesion", tag: str = "",
     rdir = work_dir(cfg) / "runs" / run_id
     rdir.mkdir(parents=True, exist_ok=True)
     if (rdir / "done.json").exists():
-        print(f"[skip] {run_id} sudah selesai")
-        return read_json(rdir / "done.json")
+        bp = rdir / "best.pt"
+        if bp.exists() and bp.stat().st_size > 0:
+            print(f"[skip] {run_id} sudah selesai")
+            return read_json(rdir / "done.json")
+        # done.json ada tapi checkpoint hilang (mis. Drive penuh saat menyimpan): ulangi run.
+        print(f"[ulang] {run_id}: done.json ada tetapi best.pt hilang/kosong -> dilatih ulang")
+        (rdir / "done.json").unlink()
 
     stage = "tune" if tag else "train"
     base = {"run_id": run_id, "stage": stage, "config_name": name, "seed": seed,
