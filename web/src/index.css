@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --color-bg: #0b0c0f;
+  --color-surface: #15161b;
+  --color-surface-2: #1c1d23;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+  --color-ink: #f0efec;
+  --color-ink-2: #b9b8c4;
+  --color-muted: #858494;
+  --color-lime: #c6f26b;
+  --color-coral: #ff7a59;
+  --color-amber: #f7c64a;
+  --color-good: #0ca30c;
+  --color-crit: #e66767;
+}
+
+:root {
+  /* Seri kategorikal (tervalidasi CVD, mode gelap, permukaan #15161b): 3 slot pertama. */
+  --s1: #3987e5; /* baseline */
+  --s2: #d95926; /* model utama */
+  --s3: #199e70; /* intervensi */
+  --grid: #26272d;
+  --axis: #3a3b42;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgb(99 92 160 / 0.14), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgb(198 242 107 / 0.06), transparent 60%),
+    var(--color-bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-lime);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  accent-color: var(--color-lime);
+}
+
+::selection {
+  background: rgb(198 242 107 / 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+.fade-in {
+  animation: fade-in 0.4s ease both;
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}

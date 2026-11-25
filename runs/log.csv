@@ -1,0 +1,1 @@
+run_id,timestamp_utc,stage,config_name,seed,split_mode,status,gpu,train_minutes,best_epoch,val_bal_acc,val_macro_f1,hparams,notes

@@ -1,0 +1,80 @@
+# Konfigurasi tunggal proyek. Semua angka yang memengaruhi hasil ada di sini,
+# supaya bisa dilacak dan diulang. Ubah lewat file ini, jangan di dalam kode.
+
+paths:
+  ham_dir: data/raw/ham10000          # berisi HAM10000_metadata.csv + semua *.jpg (subfolder bebas)
+  pad_dir: data/raw/pad_ufes_20       # berisi metadata.csv + semua *.png (subfolder bebas)
+  ham_mask_dir: null                  # opsional: masker segmentasi lesi HAM10000 (untuk metrik energi Grad-CAM di lesi)
+  work_dir: outputs                   # cache, fitur, checkpoint, prediksi, hasil
+  run_log: runs/log.csv               # semua run, termasuk yang gagal
+
+data:
+  # Empat kelas yang berpadanan di kedua dataset (proposal Bab 3.1).
+  classes: [MEL, NEV, BCC, AK]
+  ham_map: {mel: MEL, nv: NEV, bcc: BCC, akiec: AK}   # bkl, df, vasc dibuang
+  pad_map: {MEL: MEL, NEV: NEV, BCC: BCC, ACK: AK}    # SCC, SEK dibuang
+  cache_short_side: 256              # citra di-resize sekali, sisi pendek 256 px
+  img_size: 224
+
+leakage:
+  phash_max_hamming: 4               # dari 64 bit; makin kecil makin ketat
+  cosine_min: 0.95                   # kemiripan kosinus embedding DINOv2
+  max_group_warn_frac: 0.01          # peringatan bila satu grup duplikat > 1% data
+  contact_sheet_pairs: 60            # jumlah pasangan kandidat untuk diperiksa manual
+
+split:
+  test_frac: 0.15
+  val_frac: 0.15
+  test_seed: 2026                    # test set TETAP untuk semua run
+  # train/val dipartisi ulang per seed run (sumber varians data, Bouthillier 2021)
+
+seeds: [0, 1, 2]                     # baseline & model final wajib 3 seed (slide 7)
+tune_seed: 0                         # tuning cukup 1 seed
+tune_lr_grid: [1.0e-4, 3.0e-4, 1.0e-3]   # dipilih dari val balanced accuracy, model utama
+# RQ3 (split acak per citra vs per lesi). Bila kuota GPU habis, kurangi seed CNN
+# di sini DAN laporkan di Keterbatasan. Linear probe RQ3 selalu 3 seed (murah).
+rq3_cnn_seeds: [0, 1, 2]
+
+linear_probe:
+  backbone: vit_small_patch14_dinov2.lvd142m   # timm; DINOv2 ViT-S/14 (Oquab dkk. 2024)
+  C_grid: [0.01, 0.1, 1.0, 10.0]               # dipilih dari val per seed, bukan dari test
+  max_iter: 3000
+
+cnn:
+  arch: efficientnet_b0
+  weights: IMAGENET1K_V1             # torchvision; dicatat di weights.txt
+  epochs: 15
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 1.0e-2
+  warmup_epochs: 1
+  patience: 5                        # early stopping pada val balanced accuracy
+  num_workers: 2
+  amp: true
+
+augment:
+  standard:
+    rrc_scale: [0.6, 1.0]            # RandomResizedCrop
+    rot90: true                      # lesi tidak punya orientasi kanonik; rotasi 90 derajat tanpa sudut hitam baru
+    color_jitter: [0.1, 0.1, 0.1, 0.0]   # brightness, contrast, saturation, hue (ringan)
+  # Intervensi: meniru karakteristik akuisisi ponsel. Rentang ditetapkan
+  # a priori dari sifat kamera ponsel (jarak jauh, pencahayaan bebas, white
+  # balance otomatis, goyang tangan, kompresi JPEG), BUKAN dari skor PAD-UFES-20.
+  phone:
+    zoom_out_p: 0.5
+    zoom_out_scale: [0.4, 0.9]       # lesi tampak lebih kecil karena kamera lebih jauh
+    color_jitter: [0.3, 0.3, 0.3, 0.05]
+    wb_gain: [0.85, 1.15]            # gain per kanal RGB (white balance)
+    blur_p: 0.3
+    blur_sigma: [0.1, 2.0]
+    jpeg_p: 0.5
+    jpeg_quality: [30, 90]
+
+eval:
+  bootstrap_B: 2000
+  ci: 0.95
+  ece_bins: 15
+  corruption_severities: [1, 2, 3, 4, 5]
+  corruptions: [gaussian_noise, shot_noise, impulse_noise, defocus_blur, motion_blur,
+                brightness, contrast, pixelate, jpeg_compression]
+  gradcam_n_per_domain: 32

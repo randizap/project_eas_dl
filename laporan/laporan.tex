@@ -1,0 +1,134 @@
+% Laporan EAS Deep Learning - format IEEE (8-12 halaman, wajib ada bagian Keterbatasan).
+% Kompilasi: pdflatex laporan && bibtex laporan && pdflatex laporan && pdflatex laporan
+% Tabel (tables/*.tex) dan gambar (figures/*.png) diisi OTOMATIS oleh: python -m src.make_report
+% Teks bertanda \TODO{...} WAJIB diganti sebelum dikumpulkan. Hapus \drafttrue di bawah setelah final.
+\documentclass[conference]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,booktabs,amsmath,amssymb,url,xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\newif\ifdraft \drafttrue
+\newcommand{\TODO}[1]{\ifdraft{\color{red}[\textbf{ISI:} #1]}\else{\color{red}[TODO BELUM DIISI]}\fi}
+% Tabel hasil: cek file DI LUAR tabular; isi dibaca dengan primitif \@@input (bisa di-expand,
+% sehingga \bottomrule tetap valid).
+\makeatletter\newcommand{\rawinput}[1]{\@@input #1 }\makeatother
+\newcommand{\restable}[6][\columnwidth]{% [lebar] caption, label, colspec, header, file
+  \begin{table}[t]\centering\caption{#2}\label{#3}
+  \IfFileExists{tables/#6.tex}{\resizebox{#1}{!}{\begin{tabular}{#4}\toprule #5\\\midrule
+  \rawinput{tables/#6.tex}\bottomrule\end{tabular}}}{\TODO{tables/#6.tex belum ada: jalankan make\_report}}
+  \end{table}}
+\newcommand{\figinput}[2]{\IfFileExists{figures/#1.png}{\includegraphics[width=#2]{figures/#1.png}}{\fbox{\TODO{figures/#1.png belum ada}}}}
+
+\begin{document}
+\title{Generalisasi Klasifikasi Lesi Kulit dari Citra Dermatoskopi ke Citra Ponsel: Pengukuran Celah Pergeseran Domain dan Evaluasi Augmentasi Berbasis Karakteristik Akuisisi}
+
+\author{\IEEEauthorblockN{Raditya Andiza Putro (23083010058) \quad Rosyidatul Kamila (23083010076)}
+\IEEEauthorblockA{Proyek Akhir Mata Kuliah Deep Learning --- Track D: Pergeseran Data}}
+\maketitle
+
+\begin{abstract}
+Model klasifikasi lesi kulit sering dilaporkan berakurasi tinggi pada data uji yang berasal dari sumber yang sama dengan data latihnya. Kami melatih tiga konfigurasi (\emph{linear probe} DINOv2, EfficientNet-B0, dan EfficientNet-B0 dengan augmentasi karakteristik ponsel) hanya pada citra dermatoskopi HAM10000, lalu mengujinya pada test set HAM10000 yang dipisah per lesi serta pada foto ponsel PAD-UFES-20, untuk empat kelas yang berpadanan. Semua angka dilaporkan sebagai rerata tiga seed dengan interval kepercayaan 95\% dari bootstrap klaster. \TODO{1--2 kalimat hasil utama: besar celah balanced accuracy ID$\rightarrow$OOD beserta CI; apakah intervensi mempersempit celah (CI selisih berpasangan memuat nol atau tidak) dan biayanya di ID; besar inflasi skor akibat split per citra.} Kami juga menunjukkan bahwa \TODO{temuan Grad-CAM yang lolos uji pengacakan, atau nyatakan tidak lolos}.
+\end{abstract}
+
+\begin{IEEEkeywords}
+pergeseran distribusi, lesi kulit, dermatoskopi, kebocoran data, augmentasi, Grad-CAM
+\end{IEEEkeywords}
+
+\section{Pendahuluan}
+Jaringan saraf dapat mencapai skor tinggi dengan mempelajari \emph{jalan pintas}, yaitu ciri yang berkorelasi dengan label di data latih tetapi tidak bertahan di kondisi baru \cite{geirhos2020shortcut}. Mohanty dkk.\ \cite{mohanty2016plant} melaporkan akurasi 99,35\% pada test set asli, tetapi hanya 31,40\% pada citra dari sumber lain. Bahkan pada ImageNet, test set baru yang dibuat dengan prosedur yang sama menurunkan akurasi sekitar 11--14\% \cite{recht2019imagenet}. Pada dermatologi, artefak akuisisi seperti tinta penanda bedah terbukti mengubah keluaran CNN melanoma \cite{winkler2019markings}.
+
+Citra dermatoskopi diambil dengan alat pembesar berpencahayaan terkontrol, dari jarak sangat dekat, dan sering memuat vignette hitam di sudut. Sebaliknya, foto ponsel di layanan primer punya jarak, pencahayaan, white balance, dan latar yang beragam. Model yang dilatih hanya pada dermatoskopi bisa jadi belajar ciri perangkat, bukan ciri lesi.
+
+Kontribusi kami: (i) estimasi celah ID$\rightarrow$OOD yang jujur, dengan split per lesi, deteksi duplikat lintas dataset, dan CI bootstrap klaster; (ii) evaluasi berpasangan terhadap satu intervensi augmentasi yang parameternya ditetapkan \emph{a priori}; (iii) pengukuran inflasi skor akibat split per citra; (iv) interpretasi Grad-CAM yang dibatasi pada peta yang lolos uji pengacakan parameter \cite{adebayo2018sanity}.
+
+\textbf{Rumusan masalah.} RQ1: Seberapa besar penurunan balanced accuracy dan macro-F1 dari HAM10000 (ID) ke PAD-UFES-20 (OOD)? RQ2: Apakah augmentasi karakteristik ponsel memperkecil penurunan itu, dan berapa dampaknya di ID? RQ3: Seberapa besar skor menjadi terlalu tinggi bila HAM10000 dibagi acak per citra, bukan per lesi?
+
+\section{Kajian Pustaka}
+\textbf{Pergeseran distribusi.} Hendrycks \& Dietterich \cite{hendrycks2019benchmarking} membakukan uji ketahanan terhadap 15 jenis korupsi sintetis. WILDS \cite{koh2021wilds} mengumpulkan pergeseran alami lintas lokasi dan perangkat, dan menunjukkan bahwa celah ID--OOD sering besar serta tidak tertutup oleh metode generik.
+\textbf{Kebocoran \& reprodusibilitas.} Kapoor \& Narayanan \cite{kapoor2023leakage} menyusun taksonomi kebocoran dan menemukannya di ratusan publikasi. Barz \& Denzler \cite{barz2020cifair} menemukan bahwa 3,3\% citra test CIFAR-10 dan 10\% CIFAR-100 punya kembaran di data latih. Bouthillier dkk.\ \cite{bouthillier2021variance} menunjukkan bahwa varians dari pengambilan sampel data sering melebihi varians inisialisasi. Pineau dkk.\ \cite{pineau2021reproducibility} memberikan daftar periksa reprodusibilitas.
+\textbf{Interpretasi.} Grad-CAM \cite{selvaraju2017gradcam} populer, tetapi Adebayo dkk.\ \cite{adebayo2018sanity} menunjukkan bahwa sebagian metode saliency nyaris tidak berubah saat bobot diacak, sehingga tidak bisa ditafsirkan sebagai penjelasan model.
+\textbf{Data.} HAM10000 \cite{tschandl2018ham} berisi 10.015 citra dermatoskopi dari dua situs. PAD-UFES-20 \cite{pacheco2020pad} berisi 2.298 foto ponsel dari 1.373 pasien di Brasil. \TODO{opsional: 1--2 studi terdahulu yang menguji HAM$\rightarrow$PAD atau dermatoskopi$\rightarrow$klinis; cantumkan hanya yang Anda baca sendiri.}
+
+\section{Data}
+\subsection{Sumber dan pemetaan kelas}
+Kami memakai empat kelas yang ada di kedua dataset: MEL, NEV, BCC, dan AK (\texttt{akiec} di HAM, \texttt{ACK} di PAD). Kelas lain dibuang, dan model dilatih langsung pada empat kelas. HAM10000 adalah satu-satunya sumber data latih, validasi, dan uji ID. PAD-UFES-20 hanya dipakai sebagai data uji OOD: tidak untuk melatih, tidak untuk memilih checkpoint, dan tidak untuk menetapkan hiperparameter. Tabel~\ref{tab:data} \TODO{isi dari outputs/splits/lesion\_seed0.json}.
+
+\begin{table}[t]\centering\caption{Jumlah citra per kelas dan split (split per lesi, seed 0).}\label{tab:data}
+\begin{tabular}{lrrrr}\toprule
+Kelas & Latih & Val & Uji ID & Uji OOD\\\midrule
+MEL & \TODO{} & & & \\ NEV & & & & \\ BCC & & & & \\ AK & & & & \\\bottomrule
+\end{tabular}\end{table}
+
+\subsection{Pemeriksaan kebocoran}
+Sebelum split, kami menghitung \emph{perceptual hash} 64-bit dan embedding DINOv2 untuk semua citra di kedua dataset. Pasangan dengan jarak Hamming $\le 4$ atau kemiripan kosinus $\ge 0{,}95$ diperiksa manual. Lesi HAM berbeda yang memiliki citra hampir-kembar digabung (union-find) menjadi satu grup split, dan citra PAD yang kembar dengan citra HAM dikeluarkan dari uji OOD. \TODO{hasil dari outputs/leakage/report.json: jumlah pasangan per jenis, jumlah grup setelah penggabungan, jumlah pasangan yang ditolak manual, jumlah citra PAD yang dikeluarkan.}
+
+\subsection{Split}
+HAM10000 dibagi 70/15/15 per grup secara terstratifikasi. Test set ditetapkan sekali (seed tetap) dan sama untuk semua run. Partisi latih/validasi diacak ulang untuk setiap seed, sehingga variasi antar seed mencakup varians pengambilan sampel data \cite{bouthillier2021variance}. Ini sedikit berbeda dari proposal: tanpa perubahan ini, baseline regresi logistik yang deterministik akan memberikan tiga seed yang identik. Untuk RQ3, prosedur yang sama diulang dengan grup = citra (split acak per citra).
+
+\section{Metode}
+\textbf{Baseline:} fitur token CLS DINOv2 ViT-S/14 \cite{oquab2024dinov2} yang dibekukan, ditambah regresi logistik dengan bobot kelas \emph{balanced}; $C\in\{0{,}01,0{,}1,1,10\}$ dipilih dari validasi.
+\textbf{Model utama:} EfficientNet-B0 \cite{tan2019efficientnet} pretrained ImageNet (torchvision \texttt{IMAGENET1K\_V1}), di-\emph{fine-tune} penuh pada 224\,px dengan cross-entropy berbobot invers frekuensi, AdamW \cite{loshchilov2019adamw} (weight decay $10^{-2}$), warmup 1 epoch lalu jadwal kosinus, maksimal 15 epoch, dan early stopping (patience 5) pada balanced accuracy validasi. Learning rate dipilih dari $\{10^{-4},3\cdot10^{-4},10^{-3}\}$ dengan satu seed. \TODO{lr terpilih dari outputs/tuned.json}.
+\textbf{Augmentasi standar:} RandomResizedCrop (skala 0,6--1), flip horizontal dan vertikal, rotasi kelipatan 90$^\circ$, color jitter ringan (0,1).
+\textbf{Intervensi:} model utama ditambah augmentasi yang meniru akuisisi ponsel. Zoom-out 0,4--0,9$\times$ ($p{=}0{,}5$) dengan kanvas berwarna median kulit di tepi citra; color jitter (0,3; hue 0,05) dan gain white balance per kanal 0,85--1,15; Gaussian blur $\sigma\in[0{,}1,2]$ ($p{=}0{,}3$); kompresi JPEG kualitas 30--90 ($p{=}0{,}5$). Rentang ini ditetapkan \emph{a priori} dari sifat kamera ponsel dan tidak dituning dengan PAD-UFES-20. Hiperparameter lain identik dengan model utama.
+\textbf{Implementasi:} PyTorch \cite{paszke2019pytorch}; GPU \TODO{dari runs/log.csv}; total waktu GPU \TODO{jumlah kolom train\_minutes}.
+
+\section{Desain Evaluasi}
+Metrik utama adalah balanced accuracy (rerata recall per kelas) dan macro-F1. Metrik sekunder: recall per kelas, confusion matrix, dan ECE (15 bin). Setiap angka adalah rerata tiga seed; simpangan baku antar seed juga dilaporkan. CI 95\% dihitung dengan \textbf{bootstrap klaster} ($B{=}2000$), dengan klaster = lesi untuk HAM dan pasien untuk PAD, karena citra dari lesi atau pasien yang sama tidak independen. Pada setiap replikasi, metrik dihitung untuk tiap seed lalu dirata-ratakan. Perbandingan intervensi dengan model utama memakai resample dan seed yang sama (\textbf{berpasangan}). Celah ID$-$OOD memakai replikasi independen dari kedua test set. Test set dibuka satu kali setelah semua run selesai; kunci dan hash checkpoint tercatat di \texttt{TEST\_OPENED.json}.
+
+\textbf{Uji korupsi:} sembilan korupsi bergaya ImageNet-C \cite{hendrycks2019benchmarking} dengan severity 1--5 pada test ID. Korupsi dibagi dua: yang \emph{overlap} dengan augmentasi intervensi (defocus/motion blur, kecerahan, kontras, JPEG) dan yang \emph{non-overlap} (noise Gaussian/shot/impulse, pixelate). Ketahanan intervensi pada kelompok overlap diharapkan, karena korupsi itu ikut dilatih; hanya kelompok non-overlap yang menjadi bukti generalisasi.
+
+\textbf{Grad-CAM:} dihitung pada lapisan konvolusi terakhir untuk kelas benar, pada sampel seimbang dari ID dan OOD. Uji pengacakan bertingkat \cite{adebayo2018sanity} mengacak lapisan dari kepala ke lapisan awal dan mengukur korelasi Spearman serta SSIM terhadap peta asli. Peta hanya kami tafsirkan bila kemiripannya turun jelas setelah pengacakan. Sebagai heuristik artefak, kami juga mengukur fraksi energi peta di pita tepi 15\% citra.
+
+\section{Hasil}
+\subsection{RQ1: Celah ID $\rightarrow$ OOD}
+\restable{Balanced accuracy (\%) ID dan OOD, rerata 3 seed [CI 95\%], dan macro-F1 (\%).}{tab:idood}{lccccc}{Konfigurasi & BalAcc ID & BalAcc OOD & Celah & F1 ID & F1 OOD}{tab_id_ood}
+\begin{figure}[t]\centering\figinput{fig_id_vs_ood}{\columnwidth}
+\caption{Kinerja in-distribution vs out-of-distribution. Batang galat: CI 95\% bootstrap klaster.}\label{fig:idood}\end{figure}
+\TODO{Tafsirkan Tabel~\ref{tab:idood}: besar celah dan apakah CI-nya menjauhi nol; bandingkan baseline vs CNN (apakah fitur DINOv2 lebih tahan?); jangan menyebut ``signifikan'' tanpa merujuk CI.}
+
+\restable{Recall per kelas (\%) dan ECE, rerata 3 seed.}{tab:recall}{llccccc}{Konfigurasi & Domain & MEL & NEV & BCC & AK & ECE}{tab_recall}
+\begin{figure*}[t]\centering\figinput{fig_confusion}{0.85\textwidth}
+\caption{Confusion matrix ternormalisasi per baris (seed 0).}\label{fig:cm}\end{figure*}
+\TODO{Kelas mana yang paling runtuh di OOD? Ingat bahwa MEL di PAD hanya 52 citra, sehingga CI recall MEL lebar.}
+
+\subsection{RQ2: Efek intervensi}
+\restable{Selisih berpasangan intervensi $-$ model utama (poin \%), [CI 95\%].}{tab:paired}{llc}{Metrik & Domain & Selisih [CI]}{tab_paired}
+\restable{Balanced accuracy (\%) di bawah korupsi, rerata atas korupsi $\times$ severity $\times$ seed.}{tab:corr}{lccc}{Konfigurasi & Bersih & Non-overlap & Overlap}{tab_corruption}
+\begin{figure}[t]\centering\figinput{fig_corruption}{\columnwidth}
+\caption{Balanced accuracy terhadap severity korupsi.}\label{fig:corr}\end{figure}
+\TODO{Apakah CI selisih OOD menjauhi nol? Berapa biaya di ID? Apakah celah menyempit (baris ``perubahan celah'')? Bedakan hasil korupsi overlap dan non-overlap. Hasil negatif tetap dilaporkan.}
+
+\subsection{RQ3: Inflasi akibat split per citra}
+\restable{Balanced accuracy (\%) test ID: split per citra vs per lesi, dan BalAcc OOD model split per citra.}{tab:rq3}{lcccc}{Konfigurasi & Per citra & Per lesi & Inflasi [CI] & OOD}{tab_rq3}
+\TODO{Besar inflasi dan CI-nya. Rinciannya ada di results.md: skor pada citra test yang lesinya juga ada di train vs yang tidak, yang menjelaskan mekanismenya. Catatan: kedua test set berbeda, jadi CI dihitung dari bootstrap independen.}
+
+\subsection{Interpretasi: Grad-CAM dan uji pengacakan}
+\begin{figure}[t]\centering\figinput{fig_gradcam_randomization}{\columnwidth}
+\caption{Kemiripan Spearman peta Grad-CAM terhadap peta asli saat lapisan diacak bertingkat. Peta yang bermakna seharusnya turun mendekati nol.}\label{fig:rand}\end{figure}
+\begin{figure}[t]\centering\figinput{fig_gradcam_examples}{0.8\columnwidth}
+\caption{Contoh Grad-CAM (model utama) pada ID dan OOD, beserta peta setelah semua lapisan diacak.}\label{fig:gc}\end{figure}
+\TODO{Jika kemiripan tetap tinggi, katakan bahwa peta tidak bisa ditafsirkan (slide 9). Jika lolos: bandingkan energi tepi ID vs OOD (cam\_energy di results.md) dan tunjukkan contoh model yang fokus ke artefak.}
+
+\section{Pembahasan}
+\TODO{Jawab RQ1--RQ3 secara langsung. Bedakan fakta (angka dan CI), inferensi (mengapa), dan spekulasi. Kaitkan dengan jalan pintas \cite{geirhos2020shortcut}. Jangan mengatribusikan seluruh celah ke perangkat; lihat Keterbatasan.}
+
+\section{Keterbatasan}
+\textbf{Perancu pergeseran.} HAM10000 dan PAD-UFES-20 berbeda bukan hanya dalam perangkat, tetapi juga populasi (Eropa/Australia vs Brasil), tipe kulit, lokasi lesi, prevalensi kelas, dan proses pelabelan. Celah yang terukur adalah gabungan pergeseran kovariat, pergeseran prior, dan kemungkinan pergeseran konsep, sehingga tidak dapat diatribusikan semata-mata ke kondisi akuisisi.
+\textbf{Ketidakcocokan label.} \texttt{akiec} di HAM mencakup penyakit Bowen (karsinoma intraepitelial), sedangkan \texttt{ACK} di PAD tidak. Hanya sekitar 24\% citra ACK dan NEV di PAD yang terbukti biopsi \cite{pacheco2020pad}, sehingga data uji OOD memuat derau label.
+\textbf{Pergeseran prior.} NEV mendominasi data latih, sedangkan BCC dan AK mendominasi PAD. Macro-F1 sensitif terhadap prior; balanced accuracy lebih tidak sensitif, tetapi ambang keputusan model tetap terkalibrasi ke prior latih.
+\textbf{Ukuran sampel.} PAD hanya memuat 52 citra melanoma, sehingga recall MEL di OOD sangat tidak pasti.
+\textbf{Intervensi.} Parameter augmentasi ditetapkan a priori dan hanya satu konfigurasi yang diuji. Zoom-out tetap mempertahankan artefak dermatoskop (misalnya vignette) di dalam citra yang diperkecil, dan kanvas berwarna rata tidak mereproduksi tekstur kulit. Hasil negatif tidak berarti semua augmentasi akan gagal.
+\textbf{Korupsi.} Korupsi diimplementasi ulang (bukan kode ImageNet-C asli; motion blur diaproksimasi), sehingga angkanya tidak setara dengan tabel ImageNet-C. Hasil korupsi dilaporkan tanpa CI.
+\textbf{Pretraining.} Kami berasumsi data pretraining DINOv2 (LVD-142M) tidak memuat citra ISIC/HAM, tetapi tidak dapat memverifikasinya.
+\textbf{Interpretasi.} Energi tepi Grad-CAM hanya heuristik. Masker lesi \TODO{dipakai / tidak dipakai}. \TODO{tambahkan keterbatasan dari run Anda: misalnya seed yang dikurangi karena kuota, run gagal, atau ambang duplikat yang diubah.}
+
+\section{Kesimpulan}
+\TODO{3--4 kalimat: jawaban RQ1--RQ3 beserta angka dan CI, serta satu rekomendasi untuk riset berikutnya.}
+
+\section*{Reprodusibilitas dan Pernyataan AI}
+Kode, konfigurasi, log semua run (termasuk yang gagal), daftar split, dan hash bobot tersedia di repositori (\texttt{README.md}, \texttt{runs/log.csv}, \texttt{weights.txt}). Seluruh pipeline dijalankan dengan \texttt{python -m src.run\_all}. Model card dan datasheet tersedia di \texttt{model\_card.md} \cite{mitchell2019modelcards,gebru2021datasheets}. Kerangka kode dan draf dokumen dibuat dengan bantuan Claude (Anthropic), lalu diperiksa oleh penulis; rincian ada di \texttt{pernyataan.md}. Semua angka hasil berasal dari eksperimen penulis.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+\end{document}

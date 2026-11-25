@@ -1,0 +1,12 @@
+/.venv
+/data
+/outputs
+/outputs_smoke
+/runs
+/laporan
+/src
+/tests
+/notebooks
+/configs
+/web/node_modules
+/web/dist

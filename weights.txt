@@ -1,0 +1,9 @@
+# weights.txt - BELUM DIISI.
+# File ini ditulis ulang otomatis setelah semua run selesai:
+#   python -m src.hash_weights --link-prefix "https://drive.google.com/drive/folders/<ID_FOLDER>"
+# Isinya: run_id, nama file, SHA-256, dan tautan setiap checkpoint final (15 run).
+# Verifikasi oleh penilai: sha256sum best.pt  ->  harus sama dengan kolom SHA-256.
+#
+# Bobot pretrained awal (bukan hasil kami; wajib dicantumkan sumber & versi, slide 3):
+#   EfficientNet-B0: torchvision.models.EfficientNet_B0_Weights.IMAGENET1K_V1 (Tan & Le 2019)
+#   DINOv2 ViT-S/14: timm "vit_small_patch14_dinov2.lvd142m" (Oquab dkk. 2024)

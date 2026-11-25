@@ -1,0 +1,14 @@
+Taruh file unduhan HAM10000 di folder ini (zip TIDAK perlu diekstrak).
+
+Pilihan A - Kaggle (paling mudah, perlu akun Kaggle):
+  https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
+  Klik Download -> dapat archive.zip -> taruh di sini.
+
+Pilihan B - Harvard Dataverse (sumber resmi):
+  https://doi.org/10.7910/DVN/DBW86T
+  Setujui terms of use, lalu unduh: HAM10000_metadata, HAM10000_images_part_1.zip,
+  HAM10000_images_part_2.zip -> taruh di sini.
+  (ISIC2018_Task3_Test_Images.zip dan file segmentasi TIDAK perlu.)
+
+Lisensi: CC BY-NC 4.0 (non-komersial).
+File ini boleh dihapus setelah data ada.

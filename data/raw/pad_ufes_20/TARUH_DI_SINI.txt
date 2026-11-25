@@ -1,0 +1,9 @@
+Taruh file unduhan PAD-UFES-20 di folder ini (zip TIDAK perlu diekstrak).
+
+Sumber resmi (Mendeley Data, tidak perlu akun):
+  https://data.mendeley.com/datasets/zr7vgbcyr2/1
+  Klik "Download All" -> dapat satu file .zip -> taruh di sini.
+  Zip di dalam zip (imgs_part_1/2/3) akan diekstrak otomatis.
+
+Lisensi: CC BY 4.0.
+File ini boleh dihapus setelah data ada.

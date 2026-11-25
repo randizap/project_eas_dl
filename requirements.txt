@@ -1,0 +1,20 @@
+# Versi terkunci: Windows x64 + Python 3.11 (wheel tersedia di PyPI per 2026-11-25),
+# diuji lewat pytest + uji asap penuh di Python 3.11.
+# PENTING - torch dari PyPI di Windows adalah build CPU. Jika punya GPU NVIDIA,
+# pasang torch CUDA DULU (lihat README bagian 3), baru: pip install -r requirements.txt
+torch==2.15.0
+torchvision==0.29.2
+timm==1.0.31
+numpy==2.4.6
+pandas==3.1.1
+scikit-learn==1.9.1
+scipy==1.17.1
+scikit-image==0.26.0
+pillow==13.0.0
+imagehash==4.3.2
+matplotlib==3.11.2
+pyyaml==6.0.4
+pytest==9.2.0
+onnx==1.23.2
+onnxscript==0.7.2
+onnxruntime==1.32.0

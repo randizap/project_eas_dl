@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data & keluaran besar (checkpoint .pt tetap di Google Drive)
+data/raw/*/*
+!data/raw/*/TARUH_DI_SINI.txt
+outputs/
+outputs_smoke/
+
+# Website
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+.vercel
+
+# LaTeX
+laporan/*.aux
+laporan/*.log
+laporan/*.bbl
+laporan/*.blg
+laporan/*.out
+
+# Lokal
+.claude/settings.local.json
