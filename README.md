@@ -75,7 +75,7 @@ project_eas_dl/
 
 ### 3.2 Training di Google Colab
 1. Klik badge **Open in Colab**, pilih **Runtime → Change runtime type → T4 GPU**.
-2. Di **Colab Secrets** (ikon 🔑): `KAGGLE_USERNAME`, `KAGGLE_KEY` (unduh data), dan `GITHUB_TOKEN` (push hasil; *fine-grained token*, izin *Contents: read & write* untuk repo ini).
+2. Di **Colab Secrets** (ikon 🔑): `KAGGLE_API_TOKEN` (unduh data; dari Kaggle → Settings → API → Generate New Token), dan `GITHUB_TOKEN` (push hasil; *fine-grained token*, izin *Contents: read & write* untuk repo ini).
 3. Jalankan sel dari atas ke bawah. Sesi putus? Jalankan ulang 0.2 → 0.3 → sel terakhir yang belum selesai.
 4. Sel 6.1 meng-commit `web/public/`, `runs/log.csv`, `weights.txt`, `requirements.txt`, dan tabel/gambar laporan, lalu push. Vercel deploy otomatis; banner DATA DEMO hilang dengan sendirinya.
 
